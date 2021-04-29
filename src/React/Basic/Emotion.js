@@ -18,7 +18,7 @@ const flattenDataProp = (component, props) => {
   return data == null ? props : Object.assign({}, props, data);
 };
 
-exports.element_ = (component, props, areChildrenDynamic) => {
+exports.createElement_ = (component, props, areChildrenDynamic) => {
   const args = [component, flattenDataProp(component, props)];
   return createElement.apply(
     null,
@@ -28,8 +28,6 @@ exports.element_ = (component, props, areChildrenDynamic) => {
   );
 };
 
-exports.elementKeyed_ = (component, props) =>
-  exports.element_(component, props, true);
 
 exports.global = Emotion.Global;
 

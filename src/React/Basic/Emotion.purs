@@ -5,10 +5,11 @@ module React.Basic.Emotion
   , style
   , class IsStyleProperty
   , prop
-  , element
-  , elementKeyed
+  -- , element
+  -- , elementKeyed
   , css
-  , global
+  , div 
+  --, global
   , important
   , keyframes
   , nested
@@ -76,19 +77,25 @@ import Color (Color, cssStringHSLA)
 import Control.Monad.Except (runExcept)
 import Data.Array as Array
 import Data.Either (Either(..))
-import Data.Function.Uncurried (Fn2, runFn2)
+import Data.Function.Uncurried (Fn2, Fn3, runFn2, runFn3)
 import Data.Int as Int
 import Data.Number.Format (toString) as Number
 import Data.String as String
+import Elmish.Foreign (class CanPassToJavaScript)
+import Elmish.HTML (OptProps_div)
+import Elmish.HTML.Internal (unsafeCreateDOMComponent)
+import Elmish.React (class ReactChildren, class ValidReactProps, ReactComponent, ReactElement, asReactChildren)
+import Elmish.React.Import (ImportedReactComponent, ImportedReactComponentConstructor, ImportedReactComponentConstructorWithContent)
 import Foreign as F
 import Foreign.Object (Object, fromHomogeneous)
 import Prim.TypeError (class Warn, Text)
-import React.Basic (JSX, ReactComponent)
 import Type.Row.Homogeneous (class Homogeneous)
 import Unsafe.Coerce (unsafeCoerce)
 import Web.HTML.History (URL(..))
 
 data Style
+
+instance canPassToJavaScriptStyle :: CanPassToJavaScript Style
 
 instance semigroupStyle :: Semigroup Style where
   append x y =
@@ -140,43 +147,31 @@ class IsStyleProperty a where
 instance isStylePropertyStyleProperty :: IsStyleProperty StyleProperty where
   prop = identity
 
--- | Create a `JSX` node from a `ReactComponent`, by providing the props.
--- |
--- | This function is identical to `React.Basic.element` plus Emotion's
--- | `css` prop.
-element ::
-  forall props.
-  ReactComponent { className :: String | props } ->
-  { className :: String, css :: Style | props } ->
-  JSX
-element = runFn2 element_
 
-foreign import element_ ::
-  forall props.
-  Fn2
-    (ReactComponent { className :: String | props })
-    { className :: String, css :: Style | props }
-    JSX
+createElement :: forall props content
+     . ValidReactProps props
+    => ReactChildren content
+    => ReactComponent props
+    -> props                        -- Props
+    -> content                      -- Children
+    -> ReactElement
+createElement component props content = runFn3 createElement_ component props $ asReactChildren content
 
--- | Create a `JSX` node from a `ReactComponent`, by providing the props.
--- |
--- | This function is identical to `React.Basic.element` plus Emotion's
--- | `css` prop.
-elementKeyed ::
-  forall props.
-  ReactComponent { className :: String | props } ->
-  { key :: String, className :: String, css :: Style | props } ->
-  JSX
-elementKeyed = runFn2 elementKeyed_
+foreign import createElement_ :: forall props. Fn3 (ReactComponent props) props (Array ReactElement) ReactElement
 
-foreign import elementKeyed_ ::
-  forall props.
-  Fn2
-    (ReactComponent { className :: String | props })
-    { key :: String, className :: String, css :: Style | props }
-    JSX
+type EmotionProps (r :: Row Type) = ( className :: String, css  :: Style | r )
 
-foreign import global :: ReactComponent { styles :: Style }
+div :: forall r. ImportedReactComponentConstructorWithContent EmotionProps OptProps_div
+div = createElement $ unsafeCreateDOMComponent "div"
+
+div'' :: forall props children. ValidReactProps props => ReactChildren children => props -> children -> ReactElement
+div'' = createElement $ unsafeCreateDOMComponent "div"
+  
+div' :: forall r. ReactComponent r
+div' = unsafeCreateDOMComponent "div"
+
+
+
 
 css :: forall r. Homogeneous r StyleProperty => { | r } -> Style
 css = css_ <<< fromHomogeneous
