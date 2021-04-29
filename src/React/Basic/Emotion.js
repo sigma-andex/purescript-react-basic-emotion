@@ -18,15 +18,22 @@ const flattenDataProp = (component, props) => {
   return data == null ? props : Object.assign({}, props, data);
 };
 
-exports.createElement_ = (component, props, areChildrenDynamic) => {
+exports.createElement_ = (component, props, children) => {
   const args = [component, flattenDataProp(component, props)];
   return createElement.apply(
     null,
-    areChildrenDynamic || props.children == null
-      ? args
-      : args.concat(props.children)
+    children
   );
 };
+// exports.createElement_ = (component, props, areChildrenDynamic) => {
+//   const args = [component, flattenDataProp(component, props)];
+//   return createElement.apply(
+//     null,
+//     areChildrenDynamic || props.children == null
+//       ? args
+//       : args.concat(props.children)
+//   );
+// };
 
 
 exports.global = Emotion.Global;
