@@ -5,11 +5,7 @@ module React.Basic.Emotion
   , style
   , class IsStyleProperty
   , prop
-  -- , element
-  -- , elementKeyed
   , css
-  , div 
-  --, global
   , important
   , keyframes
   , nested
@@ -148,35 +144,12 @@ instance isStylePropertyStyleProperty :: IsStyleProperty StyleProperty where
   prop = identity
 
 
-createElement :: forall props content
-     . ValidReactProps props
-    => ReactChildren content
-    => ReactComponent props
-    -> props                        -- Props
-    -> content                      -- Children
-    -> ReactElement
-createElement component props content = runFn3 createElement_ component props $ asReactChildren content
-
-foreign import createElement_ :: forall props. Fn3 (ReactComponent props) props (Array ReactElement) ReactElement
-
-type EmotionProps (r :: Row Type) = ( className :: String, css  :: Style | r )
-
-div :: forall r. ImportedReactComponentConstructorWithContent EmotionProps OptProps_div
-div = createElement $ unsafeCreateDOMComponent "div"
-
-div'' :: forall props children. ValidReactProps props => ReactChildren children => props -> children -> ReactElement
-div'' = createElement $ unsafeCreateDOMComponent "div"
-  
-div' :: forall r. ReactComponent r
-div' = unsafeCreateDOMComponent "div"
 
 
-
-
-css :: forall r. Homogeneous r StyleProperty => { | r } -> Style
+css :: forall r. Homogeneous r StyleProperty => { | r } -> String
 css = css_ <<< fromHomogeneous
 
-foreign import css_ :: Object StyleProperty -> Style
+foreign import css_ :: Object StyleProperty -> String
 
 foreign import important :: StyleProperty -> StyleProperty
 
